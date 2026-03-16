@@ -1,0 +1,26 @@
+-- =============================================
+-- Author:		HENG SOPHAT
+-- Create date: 20-SEP-2016
+-- Description:	Trial Balance Consolidated Report
+-- =============================================
+CREATE PROCEDURE [dbo].[SP_RPT_DD_TB_CONSOL_BO]
+	@BRANCH_DATE DATE,@BRANCH VARCHAR(100),@GL VARCHAR(max)
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+	SELECT 
+			GM.GL_CODE,GM.GL_DESC,
+			SUM(B.OPN_DR_LCY) OPN_DR_LCY,SUM(B.OPN_CR_LCY) OPN_CR_LCY,
+			SUM(B.DR_MOV_LCY) DR_MOV_LCY,SUM(B.CR_MOV_LCY) CR_MOV_LCY,
+			SUM(B.CLO_DR_LCY) CLO_DR_LCY,SUM(B.CLO_CR_LCY) CLO_CR_LCY 
+	FROM FACT_DAILY_GL_BAL B
+	INNER JOIN DIM_GLMASTER GM ON B.GL_KEY=GM.GL_KEY
+	INNER JOIN DIM_BBC_BRANCH BR ON BR.BRANCH_KEY=B.BRANCH_KEY
+	WHERE B.DATE_KEY=CONVERT(VARCHAR,@BRANCH_DATE,112) 
+			AND B.LEAF='Y'
+			AND  BR.BRANCH_CODE collate database_default IN(SELECT Value FROM dbo.FnSplit(@BRANCH,','))
+			AND GM.GL_CODE collate database_default IN(SELECT Value FROM dbo.FnSplit(@GL,','))
+	GROUP BY GM.GL_CODE,GM.GL_DESC
+	ORDER BY GM.GL_CODE
+END

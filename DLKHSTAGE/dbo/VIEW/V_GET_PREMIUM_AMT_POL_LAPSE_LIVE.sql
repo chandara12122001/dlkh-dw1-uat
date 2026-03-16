@@ -1,0 +1,22 @@
+
+/***************************************************************************************************
+    Changelog
+    ***********
+	VERSION    DATE CHNG    UPDATE_BY    DESC
+	VERS0.1		                          Initial Version
+	VERS0.2	   12-06-2025    SAVRATH      Change UAT7 schema from KCAPXUT1 -> KCAPXUAT
+****************************************************************************************************/
+
+CREATE VIEW [dbo].[V_GET_PREMIUM_AMT_POL_LAPSE_LIVE]
+AS
+	SELECT POL.POL_ID
+	, POL.POL_BILL_MODE_CD
+	, POL_FACE_AMT = SUM(CVG.CVG_FACE_AMT)
+	, POL_MPREM_AMT = SUM(CVG.CVG_MPREM_AMT)
+	, TOTAL_CVG_NUM = COUNT(CVG.CVG_NUM)
+	FROM OPENQUERY(UAT7,'SELECT POL_ID,CVG_NUM,CVG_FACE_AMT,CVG_MPREM_AMT,CVG_STAT_PRCES_DT FROM KCAPXUAT.TCVG') CVG
+	LEFT JOIN OPENQUERY(UAT7,'SELECT POL_ID,POL_BILL_MODE_CD,POL_CSTAT_CD,POL_STAT_CHNG_DT FROM KCAPXUAT.TPOL') POL ON CVG.POL_ID = POL.POL_ID
+	WHERE 1 = 1
+		AND POL.POL_CSTAT_CD IN ('A','B','D','E','R','3')
+		AND POL.POL_STAT_CHNG_DT = CVG.CVG_STAT_PRCES_DT	-- IF BOTH VALUES ARE SAME => COVERAGE WAS LAPSED, ELSE COVERAGE WAS DROPPED
+	GROUP BY POL.POL_ID, POL.POL_BILL_MODE_CD

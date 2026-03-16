@@ -1,0 +1,16 @@
+--=========================================
+--==============CHANGE HISTORY=============
+--MODIFY BY		:	BUNCHHOEUN CHHIM
+--MODIFY DATE	:	12-FEB-18
+--MODIFY DESCR	:	FILTER ACCOUNT CLOSED 
+--				:	CASA ONLY (EXCLUDED TD)
+--==========================================
+CREATE PROC [dbo].[RPT_CUST_PORTFOLIO_CLOSE] @BRANCH_DATE DATE
+AS
+BEGIN
+	SELECT * 
+	FROM FACT_CUSTOMER_PORTFOLIO 
+	WHERE RECORD_STAT = 'C' 
+		AND ACCOUNT_TYPE IN ('U','S')
+		AND DATE_KEY = CONVERT(VARCHAR, @BRANCH_DATE, 112) 
+END

@@ -1,0 +1,47 @@
+
+-- =============================================
+-- HISTORY MODIFIED SCRIPT
+-- ================================================
+-- Author:		HING TIPI
+-- Create date: 20-DEC-2018
+-- Description:	ETL PROCESS BEFORE BEGINING OF DAY
+-- =============================================
+
+CREATE PROCEDURE [dbo].[SP_ETL_BEFORE_BOD_MAIN] 
+	@BRANCH_CODE AS VARCHAR(3),@BRANCH_DATE AS DATE
+AS
+BEGIN
+	
+	DECLARE @START_BATCH VARCHAR(10)='MAINBBOD'
+	DECLARE @PROC_TIME AS DATETIME,@IS_ERROR BIT=0
+
+	-- Start ETL Process before BOD Batch
+	SET @PROC_TIME=GETDATE()
+	IF NOT EXISTS(SELECT PROC_ID FROM ETLB_BATCH_PROC_DETAIL P 
+			WHERE P.BRANCH_CODE=@BRANCH_CODE 
+			AND P.BRANCH_DATE=@BRANCH_DATE 
+			AND P.BATCH_CODE=@START_BATCH
+			AND P.PROC_TYPE='S'
+		) EXEC SP_ETL_PROC_WRITE_LOG @BRANCH_CODE,@BRANCH_DATE,@START_BATCH,'S','Start running ETL batch before BOD...',@PROC_TIME,NULL,'','',''
+
+	---------------------------
+	-- Execute Batch Process --
+	---------------------------
+	EXEC SP_ETL_PROC_BATCH_BBOD @BRANCH_CODE,@BRANCH_DATE,@IS_ERROR OUT
+
+	
+	-- End ETL Process before BOD Batch
+	IF @IS_ERROR=0 
+	BEGIN
+			SET @PROC_TIME=GETDATE()
+			IF NOT EXISTS(SELECT PROC_ID FROM ETLB_BATCH_PROC_DETAIL P 
+					WHERE P.BRANCH_CODE=@BRANCH_CODE 
+					AND P.BRANCH_DATE=@BRANCH_DATE 
+					AND P.BATCH_CODE=@START_BATCH
+					AND P.PROC_TYPE='X'
+			) 
+			EXEC SP_ETL_PROC_WRITE_LOG @BRANCH_CODE,@BRANCH_DATE,'MAINBBOD','X','End running ETL batch before BOD.',NULL,@PROC_TIME,'','',''
+	END;
+			
+
+END
