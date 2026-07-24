@@ -408,6 +408,7 @@ CREATE PROC [dbo].[RPT_COVER_SHEET] @POL VARCHAR(10) AS
                 WHEN 'DRM001' THEN CASE WHEN CVG.CVG_STBL_3_CD IS NOT NULL AND CVG.CVG_STBL_3_CD <> ''
                                         THEN 'SMARTCare Medical ' + UPPER(LEFT(CVG.CVG_STBL_3_CD, 1)) + LOWER(SUBSTRING(CVG.CVG_STBL_3_CD, 2, LEN(CVG.CVG_STBL_3_CD)))
                                         ELSE 'N/A' END
+                WHEN 'DRP001' THEN 'PA Care Rider'
 				ELSE 'N/A'
 				END
 			,CASE WHEN POL1.POL_CASE_STAT_CD = 'M' THEN 'Manual-UW'			 
