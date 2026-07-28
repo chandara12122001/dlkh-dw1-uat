@@ -1,0 +1,5 @@
+ALTER TABLE DLKHFACT..FACT_ATR add column [AGENT_TYPE] varchar(10)
+		,[CHANNEL] varchar(10)
+		,[ORGANIZATION] nvarchar(255)
+		,[BANK_BRANCH_NAME] nvarchar(255)
+		,[PREMIUM_TERM] decimal(3)
